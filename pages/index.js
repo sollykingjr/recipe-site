@@ -22,8 +22,8 @@ export default function Home({ recipes }) {
     const q = query.toLowerCase();
     return (
       r.title.toLowerCase().includes(q) ||
-      r.ingredients?.join(" ").toLowerCase().includes(q) ||
-      r.categories?.join(" ").toLowerCase().includes(q)
+      (r.ingredients || []).join(" ").toLowerCase().includes(q) ||
+      (r.categories || []).join(" ").toLowerCase().includes(q)
     );
   });
 
@@ -46,7 +46,11 @@ export default function Home({ recipes }) {
       <ul>
         {filtered.map((recipe, i) => (
           <li key={i} style={{ marginBottom: '1.5rem' }}>
-            <h3>{recipe.title}</h3>
+            <h3>
+              <a href={`/recipes/${recipe.filename.replace('.json', '')}`} style={{ color: '#0070f3', textDecoration: 'none' }}>
+                {recipe.title}
+              </a>
+            </h3>
             <p><strong>Source:</strong> {recipe.source}</p>
             <p><strong>Servings:</strong> {recipe.servings}</p>
             <p><strong>Categories:</strong> {recipe.categories?.join(', ')}</p>
