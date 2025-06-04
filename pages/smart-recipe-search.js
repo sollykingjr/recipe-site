@@ -40,15 +40,21 @@ export default function SmartSearch() {
 
       {loading && <p>Searching...</p>}
 
-      <ul style={{ marginTop: '2rem' }}>
-        {results.map((slug) => (
-          <li key={slug}>
-            <a href={`/recipes/${slug}`} style={{ color: '#0070f3' }}>
-              {slug.replace(/-/g, ' ')}
-            </a>
-          </li>
-        ))}
-      </ul>
+     {Array.isArray(results) && results.length > 0 ? (
+  <ul style={{ marginTop: '2rem' }}>
+    {results.map((slug) => (
+      <li key={slug}>
+        <a href={`/recipes/${slug}`} style={{ color: '#0070f3' }}>
+          {typeof slug === 'string' ? slug.replace(/-/g, ' ') : ''}
+        </a>
+      </li>
+    ))}
+  </ul>
+) : results?.error ? (
+  <p style={{ color: 'red', marginTop: '1rem' }}>⚠️ {results.error}</p>
+) : (
+  !loading && query && <p style={{ marginTop: '1rem' }}>No matches found.</p>
+)}
     </div>
   );
 }
