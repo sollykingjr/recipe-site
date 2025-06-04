@@ -16,7 +16,6 @@ export default async function handler(req, res) {
     const recipeDir = path.join(process.cwd(), 'data');
     const filenames = fs.readdirSync(recipeDir);
 
-    // Pre-filter locally based on title, source, or ingredients
     const matching = filenames
       .map(name => {
         const content = fs.readFileSync(path.join(recipeDir, name), 'utf-8');
@@ -37,18 +36,22 @@ export default async function handler(req, res) {
           r.ingredients.toLowerCase().includes(q)
         );
       })
-      .slice(0, 20); // Send only top 20 matches to GPT
+      .slice(0, 20);
 
     const prompt = `
-You are a smart recipe search engine. Given a user's query and a list of brief recipe summaries, return the top 5 most relevant recipe slugs.
+You are a smart recipe search engine. Given a user's query and a list of recipe summaries, return the top 5 most relevant slugs.
 
 Query: "${query}"
 
 Available recipes:
 ${matching.map(r => `- ${r.slug}: ${r.title}, from ${r.source}. Ingredients: ${r.ingredients}. ${r.summary}`).join('\n')}
 
-From the provided list above, return ONLY a JSON array of up to 5 matching recipe slugs.
-Use only the exact slugs listed. Do not invent new slugs or return anything not provided.
+Here are the valid recipe slugs:
+
+[${matching.map(r => `"${r.slug}"`).join(', ')}]
+
+From these slugs only, return up to 5 in a JSON array.
+Do not invent new slugs. Use only the ones listed above exactly as shown.
 `;
 
     const completion = await openai.chat.completions.create({
