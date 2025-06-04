@@ -1,11 +1,10 @@
 const fs = require('fs');
 const path = require('path');
-const { Configuration, OpenAIApi } = require('openai');
+const OpenAI = require('openai');
 
-const configuration = new Configuration({
+const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
-const openai = new OpenAIApi(configuration);
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Only POST allowed' });
@@ -34,22 +33,23 @@ ${recipes.map(r => `- ${r.slug}: ${r.text}`).join('\n')}
 Return ONLY a JSON array of the most relevant slugs, like: ["a-very-good-lasagna", "kimchi-fried-rice"]
 `;
 
-    const completion = await openai.createChatCompletion({
+    const completion = await openai.chat.completions.create({
       model: "gpt-4",
       messages: [{ role: "user", content: prompt }],
     });
 
-    const matchList = completion.data.choices[0].message.content.trim();
+    const matchList = completion.choices[0].message.content.trim();
 
     let matches = [];
     try {
       matches = JSON.parse(matchList);
     } catch (jsonError) {
-      return res.status(200).json({ error: 'GPT returned bad JSON', raw: matchList });
+      return res.status(200).json({ error: 'GPT returned invalid JSON', raw: matchList });
     }
 
     res.status(200).json({ matches });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+  } catch (error) {
+    console.error('SMART SEARCH API ERROR:', error.message);
+    res.status(500).json({ error: error.message });
   }
 }
